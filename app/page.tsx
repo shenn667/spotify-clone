@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Play, Pause, SkipBack, SkipForward, Volume2, Heart } from 'lucide-react'
 
 interface Track {
   id: string
@@ -151,9 +150,9 @@ export default function Home() {
                   <div className="flex items-center gap-4">
                     <button
                       onClick={() => toggleFavorite(currentTrack.id)}
-                      className={`p-3 rounded-full ${favorites.includes(currentTrack.id) ? 'bg-green-500 text-black' : 'bg-slate-800 text-white hover:bg-slate-700'}`}
+                      className={`p-3 rounded-full text-2xl ${favorites.includes(currentTrack.id) ? 'text-green-500' : 'text-slate-400 hover:text-white'}`}
                     >
-                      <Heart size={24} fill={favorites.includes(currentTrack.id) ? 'currentColor' : 'none'} />
+                      {favorites.includes(currentTrack.id) ? '❤️' : '🤍'}
                     </button>
                   </div>
                 </div>
@@ -180,23 +179,23 @@ export default function Home() {
 
               {/* Controls */}
               <div className="flex items-center justify-center gap-6 mb-4">
-                <button onClick={handlePrev} className="p-3 rounded-full bg-slate-700 text-white hover:bg-slate-600 transition">
-                  <SkipBack size={24} />
+                <button onClick={handlePrev} className="p-3 rounded-full bg-slate-700 text-white hover:bg-slate-600 transition text-xl">
+                  ⏮️
                 </button>
                 <button
                   onClick={handlePlayPause}
-                  className="p-4 rounded-full bg-green-500 text-black hover:bg-green-400 transition transform hover:scale-110"
+                  className="p-4 rounded-full bg-green-500 text-black hover:bg-green-400 transition transform hover:scale-110 text-3xl"
                 >
-                  {isPlaying ? <Pause size={32} /> : <Play size={32} />}
+                  {isPlaying ? '⏸️' : '▶️'}
                 </button>
-                <button onClick={handleNext} className="p-3 rounded-full bg-slate-700 text-white hover:bg-slate-600 transition">
-                  <SkipForward size={24} />
+                <button onClick={handleNext} className="p-3 rounded-full bg-slate-700 text-white hover:bg-slate-600 transition text-xl">
+                  ⏭️
                 </button>
               </div>
 
               {/* Volume */}
               <div className="flex items-center gap-3">
-                <Volume2 size={20} className="text-slate-400" />
+                <span className="text-slate-400 text-xl">🔊</span>
                 <input
                   type="range"
                   min="0"
@@ -233,12 +232,9 @@ export default function Home() {
                         e.stopPropagation()
                         toggleFavorite(track.id)
                       }}
-                      className="p-2 hover:bg-slate-700 rounded transition"
+                      className="p-2 hover:bg-slate-700 rounded transition text-lg"
                     >
-                      <Heart
-                        size={20}
-                        className={favorites.includes(track.id) ? 'text-green-500 fill-green-500' : 'text-slate-400'}
-                      />
+                      {favorites.includes(track.id) ? '❤️' : '🤍'}
                     </button>
                     <p className="text-slate-400 text-sm w-12 text-right">
                       {Math.floor(track.duration / 60)}:{String(track.duration % 60).padStart(2, '0')}
@@ -255,7 +251,7 @@ export default function Home() {
           <h3 className="text-xl font-bold text-white mb-4">❤️ Favorites</h3>
           <div className="space-y-2">
             {MOCK_TRACKS.filter(t => favorites.includes(t.id)).map(track => (
-              <div key={track.id} className="p-3 bg-slate-800/30 rounded-lg hover:bg-slate-800/60 transition">
+              <div key={track.id} className="p-3 bg-slate-800/30 rounded-lg hover:bg-slate-800/60 transition cursor-pointer" onClick={() => setCurrentTrackIndex(MOCK_TRACKS.indexOf(track))}>
                 <p className="text-white font-semibold text-sm truncate">{track.title}</p>
                 <p className="text-slate-400 text-xs truncate">{track.artist}</p>
               </div>
