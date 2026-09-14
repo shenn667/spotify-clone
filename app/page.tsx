@@ -1,69 +1,269 @@
-import Image from "next/image";
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Play, Pause, SkipBack, SkipForward, Volume2, Heart } from 'lucide-react'
+
+interface Track {
+  id: string
+  title: string
+  artist: string
+  cover: string
+  duration: number
+}
+
+const MOCK_TRACKS: Track[] = [
+  {
+    id: '1',
+    title: 'Blinding Lights',
+    artist: 'The Weeknd',
+    cover: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&h=300&fit=crop',
+    duration: 200,
+  },
+  {
+    id: '2',
+    title: 'Shape of You',
+    artist: 'Ed Sheeran',
+    cover: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop',
+    duration: 234,
+  },
+  {
+    id: '3',
+    title: 'Someone You Loved',
+    artist: 'Lewis Capaldi',
+    cover: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=300&h=300&fit=crop',
+    duration: 182,
+  },
+  {
+    id: '4',
+    title: 'Levitating',
+    artist: 'Dua Lipa',
+    cover: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=300&h=300&fit=crop',
+    duration: 203,
+  },
+  {
+    id: '5',
+    title: 'Peaches',
+    artist: 'Justin Bieber',
+    cover: 'https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=300&h=300&fit=crop',
+    duration: 198,
+  },
+]
 
 export default function Home() {
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [volume, setVolume] = useState(70)
+  const [favorites, setFavorites] = useState<string[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isPlaying) return
+
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= currentTrack.duration) {
+          handleNext()
+          return 0
+        }
+        return prev + 1
+      })
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [isPlaying, currentTrackIndex])
+
+  const currentTrack = MOCK_TRACKS[currentTrackIndex]
+
+  const handlePlayPause = () => {
+    setIsPlaying(!isPlaying)
+  }
+
+  const handleNext = () => {
+    setCurrentTrackIndex((prev) => (prev + 1) % MOCK_TRACKS.length)
+    setProgress(0)
+  }
+
+  const handlePrev = () => {
+    setCurrentTrackIndex((prev) => (prev - 1 + MOCK_TRACKS.length) % MOCK_TRACKS.length)
+    setProgress(0)
+  }
+
+  const toggleFavorite = (trackId: string) => {
+    setFavorites(prev =>
+      prev.includes(trackId) ? prev.filter(id => id !== trackId) : [...prev, trackId]
+    )
+  }
+
+  const filteredTracks = MOCK_TRACKS.filter(track =>
+    track.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    track.artist.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  if (!mounted) return null
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <main className="min-h-screen bg-gradient-to-b from-slate-950 to-black flex flex-col">
+      {/* Header */}
+      <header className="bg-slate-900/50 backdrop-blur-md border-b border-slate-800 px-6 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <h1 className="text-3xl font-black text-white">
+            <span className="text-green-500">♪</span> Spotify Clone
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+          <input
+            type="text"
+            placeholder="Search songs or artists..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="px-4 py-2 rounded-full bg-slate-800 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 w-64"
+          />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </header>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+        {/* Playlist */}
+        <div className="flex-1 overflow-y-auto px-6 py-6 border-r border-slate-800">
+          <div className="max-w-4xl">
+            <h2 className="text-2xl font-bold text-white mb-4">Now Playing</h2>
+            
+            {/* Now Playing Card */}
+            <div className="bg-gradient-to-br from-green-500/20 to-slate-800 rounded-xl p-6 mb-8 border border-green-500/20">
+              <div className="flex gap-6">
+                <div className="relative w-48 h-48 rounded-lg overflow-hidden flex-shrink-0">
+                  <img
+                    src={currentTrack.cover}
+                    alt={currentTrack.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <p className="text-green-500 font-semibold mb-2">Now Playing</p>
+                    <h3 className="text-4xl font-bold text-white mb-2">{currentTrack.title}</h3>
+                    <p className="text-xl text-slate-400">{currentTrack.artist}</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => toggleFavorite(currentTrack.id)}
+                      className={`p-3 rounded-full ${favorites.includes(currentTrack.id) ? 'bg-green-500 text-black' : 'bg-slate-800 text-white hover:bg-slate-700'}`}
+                    >
+                      <Heart size={24} fill={favorites.includes(currentTrack.id) ? 'currentColor' : 'none'} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Player Controls */}
+            <div className="bg-slate-800/50 rounded-xl p-6 mb-8">
+              {/* Progress Bar */}
+              <div className="mb-4">
+                <input
+                  type="range"
+                  min="0"
+                  max={currentTrack.duration}
+                  value={progress}
+                  onChange={(e) => setProgress(parseInt(e.target.value))}
+                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-green-500"
+                />
+                <div className="flex justify-between text-xs text-slate-400 mt-2">
+                  <span>{Math.floor(progress / 60)}:{String(progress % 60).padStart(2, '0')}</span>
+                  <span>{Math.floor(currentTrack.duration / 60)}:{String(currentTrack.duration % 60).padStart(2, '0')}</span>
+                </div>
+              </div>
+
+              {/* Controls */}
+              <div className="flex items-center justify-center gap-6 mb-4">
+                <button onClick={handlePrev} className="p-3 rounded-full bg-slate-700 text-white hover:bg-slate-600 transition">
+                  <SkipBack size={24} />
+                </button>
+                <button
+                  onClick={handlePlayPause}
+                  className="p-4 rounded-full bg-green-500 text-black hover:bg-green-400 transition transform hover:scale-110"
+                >
+                  {isPlaying ? <Pause size={32} /> : <Play size={32} />}
+                </button>
+                <button onClick={handleNext} className="p-3 rounded-full bg-slate-700 text-white hover:bg-slate-600 transition">
+                  <SkipForward size={24} />
+                </button>
+              </div>
+
+              {/* Volume */}
+              <div className="flex items-center gap-3">
+                <Volume2 size={20} className="text-slate-400" />
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={volume}
+                  onChange={(e) => setVolume(parseInt(e.target.value))}
+                  className="flex-1 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-green-500"
+                />
+                <span className="text-sm text-slate-400 w-8">{volume}%</span>
+              </div>
+            </div>
+
+            {/* Playlist */}
+            <h2 className="text-2xl font-bold text-white mb-4">Playlist</h2>
+            <div className="space-y-2">
+              {filteredTracks.map((track, index) => (
+                <div
+                  key={track.id}
+                  onClick={() => setCurrentTrackIndex(index)}
+                  className={`p-4 rounded-lg cursor-pointer transition ${
+                    currentTrackIndex === index
+                      ? 'bg-green-500/20 border border-green-500'
+                      : 'bg-slate-800/30 hover:bg-slate-800/60 border border-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <img src={track.cover} alt={track.title} className="w-12 h-12 rounded object-cover" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-semibold truncate">{track.title}</p>
+                      <p className="text-slate-400 text-sm truncate">{track.artist}</p>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toggleFavorite(track.id)
+                      }}
+                      className="p-2 hover:bg-slate-700 rounded transition"
+                    >
+                      <Heart
+                        size={20}
+                        className={favorites.includes(track.id) ? 'text-green-500 fill-green-500' : 'text-slate-400'}
+                      />
+                    </button>
+                    <p className="text-slate-400 text-sm w-12 text-right">
+                      {Math.floor(track.duration / 60)}:{String(track.duration % 60).padStart(2, '0')}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </main>
-    </div>
-  );
+
+        {/* Sidebar */}
+        <div className="hidden md:flex md:flex-col w-80 bg-slate-900/50 border-l border-slate-800 p-6 overflow-y-auto">
+          <h3 className="text-xl font-bold text-white mb-4">❤️ Favorites</h3>
+          <div className="space-y-2">
+            {MOCK_TRACKS.filter(t => favorites.includes(t.id)).map(track => (
+              <div key={track.id} className="p-3 bg-slate-800/30 rounded-lg hover:bg-slate-800/60 transition">
+                <p className="text-white font-semibold text-sm truncate">{track.title}</p>
+                <p className="text-slate-400 text-xs truncate">{track.artist}</p>
+              </div>
+            ))}
+            {favorites.length === 0 && <p className="text-slate-400 text-sm">No favorites yet</p>}
+          </div>
+        </div>
+      </div>
+    </main>
+  )
 }
